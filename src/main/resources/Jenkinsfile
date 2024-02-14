@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven' // Maven tool defined in Jenkins configuration
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/ArnimTaliyan/applied3.git'
+            }
+        }
+        
+        stage('Compile') {
+            steps {
+                sh 'mvn compile' // Maven compile command
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                sh 'mvn test' // Maven test command
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package' // Maven package command
+            }
+            post {
+                success {
+                    archiveArtifacts 'target/mywebapp.war' // Archive the WAR file
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Assuming Tomcat manager URL is http://localhost:8080/manager/text
+                tomcatDeploy(credentialsId: 'tomcat-credentials', war: 'target/mywebapp.war', url: 'http://localhost:8085/manager/text', path: '/myapp')
+            }
+        }
+    }
+}
